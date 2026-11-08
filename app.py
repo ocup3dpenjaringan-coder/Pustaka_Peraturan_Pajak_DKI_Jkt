@@ -131,6 +131,11 @@ GAYA = """
 [class*="st-key-unduh_"] a { background: #B5EBC2 !important; border: 1px solid #8AD39B !important; }
 [class*="st-key-unduh_"] a, [class*="st-key-unduh_"] a * { color: #0B3318 !important; }
 [class*="st-key-lihat_"] a:hover, [class*="st-key-unduh_"] a:hover, [class*="st-key-kirim_"] [data-testid="stPopoverButton"]:hover { filter: brightness(0.92); }
+[class*="st-key-aksi_"] [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 0.4rem !important; }
+[class*="st-key-aksi_"] [data-testid="stColumn"], [class*="st-key-aksi_"] [data-testid="column"] { min-width: 0 !important; flex: 1 1 0 !important; width: auto !important; }
+[class*="st-key-aksi_"] a, [class*="st-key-aksi_"] [data-testid="stPopoverButton"] { padding: 0.35rem 0.2rem !important; min-height: 2.4rem !important; }
+[class*="st-key-aksi_"] p { font-size: 0.85rem !important; white-space: nowrap !important; }
+[data-testid="stPopoverBody"] { min-width: min(22rem, 90vw) !important; }
 </style>
 """
 
@@ -164,7 +169,8 @@ def kartu(d, indeks):
         if not d["link"]:
             st.caption("_(Belum ada link dokumen)_")
             return
-        c1, c2, c3 = st.columns(3)
+        with kotak(f"aksi_{indeks}"):
+            c1, c2, c3 = st.columns(3)
         with c1, kotak(f"lihat_{indeks}"):
             st.link_button("👁 Lihat", d["link"], use_container_width=True)
         with c2, kotak(f"kirim_{indeks}"):
