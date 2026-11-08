@@ -49,7 +49,17 @@ def tidak_berlaku(status: str) -> bool:
 
 
 def judul_peraturan(d) -> str:
-    return f"{d['jenis']} {d['nomor']} Tahun {d['tahun']}".strip()
+    """Susun judul tanpa kata berulang: kolom Nomor sering sudah memuat jenis & tahun."""
+    jenis, nomor, tahun = d["jenis"].strip(), d["nomor"].strip(), d["tahun"].strip()
+    if not nomor:
+        judul = jenis
+    elif re.search(r"[A-Za-z]", nomor):  # Nomor sudah berupa sebutan lengkap, mis. "SK KABAN No.1201 Tahun 2026"
+        judul = nomor
+    else:  # Nomor hanya angka, mis. "68" -> tambahkan jenis di depan
+        judul = f"{jenis} {nomor}".strip()
+    if tahun and tahun not in judul:
+        judul = f"{judul} Tahun {tahun}".strip()
+    return judul
 
 
 def teks_kirim(d) -> str:
@@ -142,8 +152,8 @@ def kartu(d, indeks):
 
 
 def main():
-    kiri, kanan = st.columns([4, 1])
-    kiri.title("📚 Pustaka Peraturan Pajak")
+    kiri, kanan = st.columns([5, 1])
+    kiri.markdown("### 📚 Pustaka Peraturan Pajak")
     if kanan.button("🔄", help="Muat ulang data dari Google Sheet"):
         muat_data.clear()
         st.rerun()
