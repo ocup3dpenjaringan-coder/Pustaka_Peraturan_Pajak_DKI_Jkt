@@ -115,6 +115,34 @@ def muat_data() -> pd.DataFrame:
 
 
 # ------------------------------------------------------------------------ UI
+GAYA = """
+<style>
+[data-testid="stTextInput"] input {
+    padding-left: 46px !important;
+    background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23e0e0e0' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cline x1='15.5' y1='15.5' x2='21' y2='21'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 14px center;
+    background-size: 22px 22px;
+}
+[class*="st-key-lihat_"] a { background: #AEDCFF !important; border: 1px solid #8CC9F5 !important; }
+[class*="st-key-lihat_"] a, [class*="st-key-lihat_"] a * { color: #0B2540 !important; }
+[class*="st-key-kirim_"] [data-testid="stPopoverButton"] { background: #FFF1A8 !important; border: 1px solid #EAD56A !important; }
+[class*="st-key-kirim_"] [data-testid="stPopoverButton"], [class*="st-key-kirim_"] [data-testid="stPopoverButton"] * { color: #3D3200 !important; }
+[class*="st-key-unduh_"] a { background: #B5EBC2 !important; border: 1px solid #8AD39B !important; }
+[class*="st-key-unduh_"] a, [class*="st-key-unduh_"] a * { color: #0B3318 !important; }
+[class*="st-key-lihat_"] a:hover, [class*="st-key-unduh_"] a:hover, [class*="st-key-kirim_"] [data-testid="stPopoverButton"]:hover { filter: brightness(0.92); }
+</style>
+"""
+
+
+def kotak(key):
+    """Wadah bernama (agar tombolnya bisa diberi warna lewat CSS)."""
+    try:
+        return st.container(key=key)
+    except TypeError:  # Streamlit versi lama tanpa parameter key
+        return st.container()
+
+
 def kartu(d, indeks):
     merah = tidak_berlaku(d["status"])
     with st.container(border=True):
@@ -137,21 +165,25 @@ def kartu(d, indeks):
             st.caption("_(Belum ada link dokumen)_")
             return
         c1, c2, c3 = st.columns(3)
-        c1.link_button("👁 Lihat", d["link"], use_container_width=True)
-        with c2.popover("📤 Kirim", use_container_width=True):
-            teks = teks_kirim(d)
-            st.link_button("💬 WhatsApp", f"https://wa.me/?text={quote(teks)}", use_container_width=True)
-            st.link_button(
-                "📧 Email",
-                f"mailto:?subject={quote('Peraturan: ' + judul_peraturan(d))}&body={quote(teks)}",
-                use_container_width=True,
-            )
-            st.caption("Atau salin teks ini (ikon salin di pojok kanan):")
-            st.code(teks, language=None)
-        c3.link_button("⬇ Download", url_unduh_langsung(d["link"]), use_container_width=True)
+        with c1, kotak(f"lihat_{indeks}"):
+            st.link_button("👁 Lihat", d["link"], use_container_width=True)
+        with c2, kotak(f"kirim_{indeks}"):
+            with st.popover("📤 Kirim", use_container_width=True):
+                teks = teks_kirim(d)
+                st.link_button("💬 WhatsApp", f"https://wa.me/?text={quote(teks)}", use_container_width=True)
+                st.link_button(
+                    "📧 Email",
+                    f"mailto:?subject={quote('Peraturan: ' + judul_peraturan(d))}&body={quote(teks)}",
+                    use_container_width=True,
+                )
+                st.caption("Atau salin teks ini (ikon salin di pojok kanan):")
+                st.code(teks, language=None)
+        with c3, kotak(f"unduh_{indeks}"):
+            st.link_button("⬇ Download", url_unduh_langsung(d["link"]), use_container_width=True)
 
 
 def main():
+    st.markdown(GAYA, unsafe_allow_html=True)
     kiri, kanan = st.columns([5, 1])
     kiri.markdown("### 📚 Pustaka Peraturan Pajak")
     if kanan.button("🔄", help="Muat ulang data dari Google Sheet"):
@@ -166,7 +198,7 @@ def main():
         st.exception(e)
         st.stop()
 
-    kata = st.text_input("🔎 Cari", placeholder="mis. pbb 2025 pengurangan", label_visibility="collapsed")
+    kata = st.text_input("🔎 Cari", placeholder="Cari peraturan, mis. pbb 2025 pengurangan", label_visibility="collapsed")
 
     with st.expander("Filter"):
         def opsi(kolom):
